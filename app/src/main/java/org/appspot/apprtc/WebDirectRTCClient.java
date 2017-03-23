@@ -29,7 +29,7 @@ public class WebDirectRTCClient implements AppRTCClient {
   private static final int DEFAULT_PORT = 8888;
   private String host;
   private Socket client;
-  private String id;
+  private String from;
 
   // Regex pattern used for checking if room id looks like an IP.
   static final Pattern IP_PATTERN = Pattern.compile("("
@@ -147,9 +147,10 @@ public class WebDirectRTCClient implements AppRTCClient {
   private void disconnectFromRoomInternal() {
     roomState = ConnectionState.CLOSED;
 
-    if (tcpClient != null) {
-      tcpClient.disconnect();
-      tcpClient = null;
+    if (client != null) {
+      client.disconnect();
+      client.close();
+      client = null;
     }
     executor.shutdown();
   }
@@ -164,7 +165,7 @@ public class WebDirectRTCClient implements AppRTCClient {
     private Emitter.Listener onId = new Emitter.Listener() {
       @Override
       public void call(Object... args) {
-        id = args[0].toString();
+        String id = args[0].toString();
         Log.i(TAG, "id = " + id);
         try {
           JSONObject message = new JSONObject();
@@ -182,12 +183,16 @@ public class WebDirectRTCClient implements AppRTCClient {
         JSONObject json = (JSONObject) args[0];
         Log.i(TAG, "data = " + json.toString());
         try {
-          String from = json.getString("from");
+          from = json.getString("from");
           String type = json.getString("type");
+          JSONObject payload = null;
+          if (!type.equals("init")) {
+            payload = json.getJSONObject("payload");
+          }
           if (type.equals("candidate")) {
-            events.onRemoteIceCandidate(toJavaCandidate(json));
+            events.onRemoteIceCandidate(toJavaCandidate(payload));
           } else if (type.equals("remove-candidates")) {
-            JSONArray candidateArray = json.getJSONArray("candidates");
+            JSONArray candidateArray = payload.getJSONArray("candidates");
             IceCandidate[] candidates = new IceCandidate[candidateArray.length()];
             for (int i = 0; i < candidateArray.length(); ++i) {
               candidates[i] = toJavaCandidate(candidateArray.getJSONObject(i));
@@ -195,11 +200,11 @@ public class WebDirectRTCClient implements AppRTCClient {
             events.onRemoteIceCandidatesRemoved(candidates);
           } else if (type.equals("answer")) {
             SessionDescription sdp = new SessionDescription(
-                SessionDescription.Type.fromCanonicalForm(type), json.getString("sdp"));
+                SessionDescription.Type.fromCanonicalForm(type), payload.getString("sdp"));
             events.onRemoteDescription(sdp);
           } else if (type.equals("offer")) {
             SessionDescription sdp = new SessionDescription(
-                SessionDescription.Type.fromCanonicalForm(type), json.getString("sdp"));
+                SessionDescription.Type.fromCanonicalForm(type), payload.getString("sdp"));
 
             SignalingParameters parameters = new SignalingParameters(
                 // Ice servers are not needed for direct connections.
@@ -326,17 +331,6 @@ public class WebDirectRTCClient implements AppRTCClient {
     events.onConnectedToRoom(parameters);
   }
 
-
-//  @Override
-  public void onTCPError(String description) {
-    reportError("TCP connection error: " + description);
-  }
-
-//  @Override
-  public void onTCPClose() {
-    events.onChannelClose();
-  }
-
   // --------------------------------------------------------------------
   // Helper functions.
   private void reportError(final String errorMessage) {
@@ -352,14 +346,6 @@ public class WebDirectRTCClient implements AppRTCClient {
     });
   }
 
-//  private void sendMessage(final String message) {
-//    executor.execute(new Runnable() {
-//      @Override
-//      public void run() {
-//        tcpClient.send(message);
-//      }
-//    });
-//  }
   /**
    * Send a message through the signaling server
    *
@@ -372,7 +358,7 @@ public class WebDirectRTCClient implements AppRTCClient {
       type = payload.get("type").toString();
       Log.i("yytang", "type = " + type);
       JSONObject message = new JSONObject();
-      message.put("to", id);
+      message.put("to", from);
       message.put("type", type);
       message.put("payload", payload);
       client.emit("message", message);

@@ -44,6 +44,10 @@
     <string name="pref_screencapture_title">Use screencapture.</string>
     <string name="pref_screencapture_default">false</string>
 
+    <string name="pref_projectRTC_key">projectRTC_preference</string>
+    <string name="pref_projectRTC_title">Use ProjectRTC.</string>
+    <string name="pref_projectRTC_default">false</string>
+
     <string name="pref_camera2_key">camera2_preference</string>
     <string name="pref_camera2_title">Use Camera2.</string>
     <string name="pref_camera2_default">true</string>

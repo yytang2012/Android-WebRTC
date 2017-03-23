@@ -84,6 +84,7 @@ public class CallActivity extends Activity implements AppRTCClient.SignalingEven
   public static final String EXTRA_LOOPBACK = "org.appspot.apprtc.LOOPBACK";
   public static final String EXTRA_VIDEO_CALL = "org.appspot.apprtc.VIDEO_CALL";
   public static final String EXTRA_SCREENCAPTURE = "org.appspot.apprtc.SCREENCAPTURE";
+  public static final String EXTRA_PROJECTRTC = "org.appspot.apprtc.PROJECTRTC";
   public static final String EXTRA_CAMERA2 = "org.appspot.apprtc.CAMERA2";
   public static final String EXTRA_VIDEO_WIDTH = "org.appspot.apprtc.VIDEO_WIDTH";
   public static final String EXTRA_VIDEO_HEIGHT = "org.appspot.apprtc.VIDEO_HEIGHT";
@@ -177,6 +178,7 @@ public class CallActivity extends Activity implements AppRTCClient.SignalingEven
   private long callStartedTimeMs = 0;
   private boolean micEnabled = true;
   private boolean screencaptureEnabled = false;
+  private boolean projectRTCEnabled = false;
   private static Intent mediaProjectionPermissionResultData;
   private static int mediaProjectionPermissionResultCode;
   // True if local view is in the fullscreen renderer.
@@ -334,7 +336,12 @@ public class CallActivity extends Activity implements AppRTCClient.SignalingEven
       appRtcClient = new WebSocketRTCClient(this);
     } else {
       Log.i(TAG, "Using DirectRTCClient because room name looks like an IP.");
-      appRtcClient = new DirectRTCClient(this);
+      projectRTCEnabled = intent.getBooleanExtra(EXTRA_PROJECTRTC, false);
+      if (projectRTCEnabled) {
+        appRtcClient = new WebDirectRTCClient(this);
+      } else {
+        appRtcClient = new DirectRTCClient(this);
+      }
     }
     // Create connection parameters.
     roomConnectionParameters = new RoomConnectionParameters(roomUri.toString(), roomId, loopback);

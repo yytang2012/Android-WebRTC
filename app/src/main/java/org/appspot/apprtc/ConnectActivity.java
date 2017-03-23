@@ -54,6 +54,7 @@ public class ConnectActivity extends Activity {
   private SharedPreferences sharedPref;
   private String keyprefVideoCallEnabled;
   private String keyprefScreencapture;
+  private String keyprefProjectRTC;
   private String keyprefCamera2;
   private String keyprefResolution;
   private String keyprefFps;
@@ -98,6 +99,7 @@ public class ConnectActivity extends Activity {
     sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
     keyprefVideoCallEnabled = getString(R.string.pref_videocall_key);
     keyprefScreencapture = getString(R.string.pref_screencapture_key);
+    keyprefProjectRTC = getString(R.string.pref_projectRTC_key);
     keyprefCamera2 = getString(R.string.pref_camera2_key);
     keyprefResolution = getString(R.string.pref_resolution_key);
     keyprefFps = getString(R.string.pref_fps_key);
@@ -337,6 +339,10 @@ public class ConnectActivity extends Activity {
     boolean useScreencapture = sharedPrefGetBoolean(R.string.pref_screencapture_key,
         CallActivity.EXTRA_SCREENCAPTURE, R.string.pref_screencapture_default, useValuesFromIntent);
 
+    // Use projectRTC option.
+    boolean useProjectRTC = sharedPrefGetBoolean(R.string.pref_projectRTC_key,
+            CallActivity.EXTRA_PROJECTRTC, R.string.pref_projectRTC_default, useValuesFromIntent);
+
     // Use Camera2 option.
     boolean useCamera2 = sharedPrefGetBoolean(R.string.pref_camera2_key, CallActivity.EXTRA_CAMERA2,
         R.string.pref_camera2_default, useValuesFromIntent);
@@ -504,6 +510,7 @@ public class ConnectActivity extends Activity {
       intent.putExtra(CallActivity.EXTRA_LOOPBACK, loopback);
       intent.putExtra(CallActivity.EXTRA_VIDEO_CALL, videoCallEnabled);
       intent.putExtra(CallActivity.EXTRA_SCREENCAPTURE, useScreencapture);
+      intent.putExtra(CallActivity.EXTRA_PROJECTRTC, useProjectRTC);
       intent.putExtra(CallActivity.EXTRA_CAMERA2, useCamera2);
       intent.putExtra(CallActivity.EXTRA_VIDEO_WIDTH, videoWidth);
       intent.putExtra(CallActivity.EXTRA_VIDEO_HEIGHT, videoHeight);
