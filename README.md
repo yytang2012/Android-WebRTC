@@ -1,6 +1,6 @@
-# AndroidWebRTC
+# Android-WebRTC
 
-## WebRTC Live Streaming
+## An WebRTC implementation for Android platform
 
 An Android client for [ProjectRTC](https://github.com/yytang2012/ProjectRTC) and [WebRTCDemo](https://appr.tc/).
 
